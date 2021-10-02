@@ -88,6 +88,7 @@ function prompt() {
     });
 }
 
+// adding roles, etc
 const addRole = () => {
     inquirer.prompt(prompts.addRoleP).then((answers) => {
         addQuery = `INSERT INTO role (title, salary, department_id) VALUES ( "${answers.title}", ${answers.salary}, "${answers.deptId}")`;
@@ -128,6 +129,82 @@ const addDept = () => {
     })
 }
 
+// viewing roles, etc
+const createConsTable = () => {
+    connection.query("SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.name",
+    (err,res) => {
+        console.table(res);
+    })
+    startManaging();
+}
+
+const viewDept = () => {
+    connection.query('SELECT * FROM department', (err, res) => {
+        console.table( res);
+    })
+    startManaging();
+}
+
+const viewEmployee = () => {
+    connection.query('SELECT * FROM employee', (err, res)=> {
+        console.table(res);
+    })
+    startManaging();
+}
+
+const viewRole = () => {
+    connection.query('SELECT * FROM role', (err, res) => {
+        console.table(res);
+    })
+    startManaging();
+}
+
+// update roles, etc
+const updateEmp = () => {
+    inquirer.prompt([{
+        name: 'update',
+        type: 'list',
+        message: 'Which would you like to update?',
+        choices: ['Role', 'Manager']
+    },
+    {
+        name: 'empId',
+        type: 'input',
+        message: 'Enter Employee Id:'
+    }]).then((answer) => {
+            switch (answer.update) {
+            case ('Role'):
+                updateEmpRole(answer.empId);
+                break;
+            case ('Manager'):
+                updateEmpMan(answer.empId);
+                break;
+        } 
+    })
+    
+}
+const updateEmpRole = (empId) => {
+   inquirer.prompt({
+       name: 'newRole',
+       type: 'input',
+       message: 'Enter the new Role Id:'
+   }).then((value) => {
+       connection.query(`UPDATE employee SET role_id = ${value.newRole} WHERE id = ${empId}`)
+   })
+   startManaging();
+}
+
+const updateEmpMan = (empId) => {
+    inquirer.prompt({
+        name: 'newMan',
+        type: 'input',
+        message: 'Enter the new Manager Id:'
+    }).then((value) => {
+        connection.query(`UPDATE employee SET manager_id = ${value.newMan} WHERE employee_id = ${empId}`)
+    })
+    startManaging();
+ }
+ 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
